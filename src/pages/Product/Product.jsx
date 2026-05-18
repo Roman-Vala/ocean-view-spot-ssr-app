@@ -1,0 +1,146 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useOutletContext } from "react-router-dom";
+import ProductImageGallery from './ProductImageGallery';
+import { formatCurrency } from '../../utils/formatCurrency';
+import ShoppingBagIcon from '../../Icons/shoppingBagIcon';
+import ProductInfoSkeleton from './ProductInfoSkeleton';
+
+
+export default function ProductPage() {
+  const { productSlug } = useParams(); 
+  const segmentArray = productSlug.split('-');
+  const productId = segmentArray[segmentArray.length-1];
+
+  const { appContext, setAppContext } = useOutletContext();
+
+  const productETag = appContext.productETag;
+  const cachedProduct = appContext.productCache.find(el=>el.itemId===productId);
+
+  // console.log(productETag, cachedProduct);
+
+  const [product, setProduct] = useState(cachedProduct || {});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCheckoutLoading, setCheckoutLoading] = useState(false);
+
+  const isAvailable = product.item?.item_data.variations[0].inventoryCount >= 1;
+
+  const addToCart = (item) => {
+    const existingItem = appContext.cart.find((cartItem) => cartItem.id === item.id);
+    setAppContext({
+      ...appContext,
+      ...( existingItem?{cart:[...appContext.cart]}:{cart:[...appContext.cart, item]} ),
+      isCartOpen: true
+    })
+  };
+
+  
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchItemData = async () => {
+      // console.log('fetching data');
+
+      try {
+        const res = await fetch(`/api/items/${productId}`, { 
+          signal: controller.signal,
+          headers: cachedProduct && productETag
+            ? {"If-None-Match": productETag}
+            : {}
+        });
+
+        if (res.status === 304) {
+          // console.log('304');
+          setProduct(cachedProduct);
+          setIsLoading(false);
+
+          return;
+        }
+
+        const etag = res.headers.get("ETag");
+        const productData = await res.json();
+        // console.log(productData)
+        setProduct(productData);
+        setIsLoading(false);
+        setAppContext(oldCtx=>{
+          const updatedProductCache = oldCtx.productCache.find(item =>
+            item.itemId===productId)
+              ? oldCtx.productCache
+              : [...oldCtx.productCache, productData]
+          ;
+          
+          return {
+            ...oldCtx,
+            productCache:updatedProductCache,
+            productETag:etag
+          }
+        })
+
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error(err);
+        }
+      }
+    };
+    fetchItemData();
+    return () => {
+      controller.abort();
+    };
+  }, [appContext.productFetchIteration]);
+
+
+  return (
+    <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-12">
+      <div className="col-span-6">
+        <ProductImageGallery images={product?.images || []} />
+      </div>
+      {/* Product Info */}
+      {isLoading ? (
+        <ProductInfoSkeleton />
+      ) : (
+        <div className="flex flex-col gap-4 col-span-6">
+          <h1 className="text-3xl font-semibold">{product.item?.item_data.name}</h1>
+          <p className="text-2xl font-medium text-gray-700">
+            
+            {isAvailable
+              ? <span>{formatCurrency(
+                  product.item?.item_data.variations[0].item_variation_data.price_money.amount
+                )}</span>
+
+              : <span className="text-stone-500 font-normal px-3 py-1.5 border rounded">
+                  SOLD
+                </span>
+            }
+          </p>
+
+          <p className="text-gray-600 leading-relaxed">
+            {product.item?.item_data.description}
+          </p>
+
+          {/* Actions */}
+          {isAvailable && <div className="flex gap-4 mt-4">
+            <button 
+              className="flex justify-center items-center bg-stone-900 text-white w-40 px-8 py-3 rounded hover:opacity-90 transition"
+              onClick={()=>addToCart(product.item)}
+            >
+              {isCheckoutLoading
+                ? <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                : <span>Buy Now</span>
+              }
+            </button>
+            <button 
+              className=" flex gap-3 items-center border border-gray-500 pl-5 pr-6 py-3 rounded hover:bg-gray-100 transition"
+              onClick={()=>addToCart(product.item)}
+            >
+              <ShoppingBagIcon />
+              <span>Add to Cart</span>
+            </button>
+          </div>}
+        </div>
+      )}
+    </div>
+  );
+}

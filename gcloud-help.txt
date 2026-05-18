@@ -1,0 +1,29 @@
+To set the active account, run:
+  gcloud config set account valaroman@gmail.com
+  gcloud auth login
+  gcloud auth application-default login
+
+gcloud projects list  
+gcloud config get-value project
+gcloud config set project lenivisualart
+
+gcloud app deploy --project lenivisualart
+
+
+To set the active account, run:
+  gcloud config set account evergreenpower.development@gmail.com
+  gcloud auth login
+
+gcloud config list
+
+gcloud app logs tail -s default
+
+cd existing_folder
+git init 
+git remote add origin https://github.com/Roman-Vala/leni-visual-app.git
+git add .
+git commit -m "Initial commit"
+git push -u origin master
+
+
+gcloud auth application-default login
