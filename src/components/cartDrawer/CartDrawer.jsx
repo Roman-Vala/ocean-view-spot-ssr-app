@@ -1,5 +1,5 @@
 import React,{useState} from 'react';
-import ShoppingBagIcon from '../../Icons/shoppingBagIcon';
+import ShoppingBagIcon from '../../Icons/ShoppingBagIcon';
 import { formatCurrency } from '../../utils/formatCurrency';
 
 export default function CartDrawer({isOpen, setIsOpen, cart, removeFromCart, refreshProducts}) {

@@ -20,7 +20,7 @@ gcloud app logs tail -s default
 
 cd existing_folder
 git init 
-git remote add origin https://github.com/Roman-Vala/leni-visual-app.git
+git remote add origin https://github.com/Roman-Vala/leni-visual-art-ssr-app.git
 git add .
 git commit -m "Initial commit"
 git push -u origin master

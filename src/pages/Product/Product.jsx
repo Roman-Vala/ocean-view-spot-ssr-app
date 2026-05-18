@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useOutletContext } from "react-router-dom";
 import ProductImageGallery from './ProductImageGallery';
 import { formatCurrency } from '../../utils/formatCurrency';
-import ShoppingBagIcon from '../../Icons/shoppingBagIcon';
+import ShoppingBagIcon from '../../Icons/ShoppingBagIcon';
 import ProductInfoSkeleton from './ProductInfoSkeleton';
 
 
@@ -19,7 +19,7 @@ export default function ProductPage() {
   // console.log(productETag, cachedProduct);
 
   const [product, setProduct] = useState(cachedProduct || {});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(cachedProduct ? false : true);
   const [isCheckoutLoading, setCheckoutLoading] = useState(false);
 
   const isAvailable = product.item?.item_data.variations[0].inventoryCount >= 1;

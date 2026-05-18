@@ -2,8 +2,8 @@ import React,{ useEffect, useState } from 'react';
 import { Link, useParams, useMatch } from 'react-router-dom';
 
 import LoadingBars from './collectionList/LoadingBars';
-import MailIcon from '../Icons/mailIcon';
-import ShoppingBagIcon from '../Icons/shoppingBagIcon';
+import MailIcon from '../Icons/MailIcon';
+import ShoppingBagIcon from '../Icons/ShoppingBagIcon';
 import InstaIcon from '../Icons/InstaIcon';
 
 

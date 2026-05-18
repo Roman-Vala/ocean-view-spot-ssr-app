@@ -31,7 +31,7 @@ function LoadingBars({ width = 20 }) {
 	});
 }
 //#endregion
-//#region src/Icons/mailIcon.jsx
+//#region src/Icons/MailIcon.jsx
 function MailIcon({ className }) {
 	return /* @__PURE__ */ jsx("svg", {
 		xmlns: "http://www.w3.org/2000/svg",
@@ -48,7 +48,7 @@ function MailIcon({ className }) {
 	});
 }
 //#endregion
-//#region src/Icons/shoppingBagIcon.jsx
+//#region src/Icons/ShoppingBagIcon.jsx
 function ShoppingBagIcon({ className }) {
 	return /* @__PURE__ */ jsxs("svg", {
 		width: "20",
@@ -920,7 +920,7 @@ function ProductPage() {
 	const productETag = appContext.productETag;
 	const cachedProduct = appContext.productCache.find((el) => el.itemId === productId);
 	const [product, setProduct] = useState(cachedProduct || {});
-	const [isLoading, setIsLoading] = useState(true);
+	const [isLoading, setIsLoading] = useState(cachedProduct ? false : true);
 	const [isCheckoutLoading, setCheckoutLoading] = useState(false);
 	const isAvailable = product.item?.item_data.variations[0].inventoryCount >= 1;
 	const addToCart = (item) => {
