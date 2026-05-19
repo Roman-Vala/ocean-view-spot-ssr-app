@@ -2,6 +2,7 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { StaticRouter, matchPath, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import ScrollToTop from './components/ScrollToTop';
 
 import App from './App';
 import Collection from './pages/Collection/Collection';
@@ -114,6 +115,7 @@ export async function render(url,req) {
   const appHtml = renderToString(
     <HelmetProvider context={helmetContext}>
       <StaticRouter location={url}>
+        <ScrollToTop/>
         <Routes>
           <Route path="/" element={<App initialData={initialData} />}>
             <Route index element={<Home />} />

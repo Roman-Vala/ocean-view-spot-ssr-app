@@ -58,7 +58,7 @@ export default function Header({isLoading, appContext, setCartOpen}) {
         {isLoading 
           ? !basicHeader && <LoadingBars />
           : !basicHeader && <div 
-              className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"
+              className="absolute inset-0 bg-linear-to-b from-black/30 to-transparent"
             >
               <p className=" flex h-96 justify-center items-center text-3xl uppercase font-light text-white">{collectionName}</p>
             </div>

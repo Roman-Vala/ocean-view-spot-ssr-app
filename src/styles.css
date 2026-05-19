@@ -3,3 +3,29 @@
 /* body {
   @apply bg-gray-100 text-gray-900;
 } */
+.loading-bar {
+  /* width: 120px;
+  height: 12px; */
+  color: #4d4d4d;
+  overflow: hidden;
+}
+
+.loading-bar__rect {
+  fill: currentColor;
+  transform-origin: left;
+  animation: moving 1s ease-in-out infinite;
+}
+
+@keyframes moving {
+  0% {
+    transform: scaleX(0) translateX(0);
+  }
+
+  /* 50% {
+    transform: scaleX(1) translateX(0);
+  } */
+
+  100% {
+    transform: scaleX(1) translateX(100%);
+  }
+}

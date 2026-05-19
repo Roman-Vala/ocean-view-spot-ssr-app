@@ -36,6 +36,10 @@ export default function ProductImageGallery({ images = [] }) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen]);
 
+  useEffect(()=>{
+    setSelectedIndex(0);
+  }, [images.length])
+
   if (!images.length) {
     return (
       <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded">
@@ -65,7 +69,7 @@ export default function ProductImageGallery({ images = [] }) {
             <button
               key={index}
               onClick={() => setSelectedIndex(index)}
-              className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition ${
+              className={`shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition ${
                 selectedIndex === index
                   ? "border-stone-500"
                   : "border-transparent opacity-70 hover:opacity-100"

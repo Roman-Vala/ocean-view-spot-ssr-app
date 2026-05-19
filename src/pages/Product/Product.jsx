@@ -4,6 +4,9 @@ import ProductImageGallery from './ProductImageGallery';
 import { formatCurrency } from '../../utils/formatCurrency';
 import ShoppingBagIcon from '../../Icons/ShoppingBagIcon';
 import ProductInfoSkeleton from './ProductInfoSkeleton';
+import LoadingBar from '../../Icons/LoadingBar';
+import CollectionsList from '../../components/collectionList/CollectionsList';
+import RecentProducts from '../../components/productList/RecentProducts';
 
 
 export default function ProductPage() {
@@ -22,7 +25,10 @@ export default function ProductPage() {
   const [isLoading, setIsLoading] = useState(cachedProduct ? false : true);
   const [isCheckoutLoading, setCheckoutLoading] = useState(false);
 
+  const inventoryCount = product.item?.item_data.variations[0].inventoryCount;
   const isAvailable = product.item?.item_data.variations[0].inventoryCount >= 1;
+
+  // console.log(product.item?.item_data.variations[0].inventoryCount);
 
   const addToCart = (item) => {
     const existingItem = appContext.cart.find((cartItem) => cartItem.id === item.id);
@@ -44,7 +50,7 @@ export default function ProductPage() {
       try {
         const res = await fetch(`/api/items/${productId}`, { 
           signal: controller.signal,
-          headers: cachedProduct && productETag
+          headers: cachedProduct && inventoryCount && productETag
             ? {"If-None-Match": productETag}
             : {}
         });
@@ -63,9 +69,9 @@ export default function ProductPage() {
         setProduct(productData);
         setIsLoading(false);
         setAppContext(oldCtx=>{
-          const updatedProductCache = oldCtx.productCache.find(item =>
-            item.itemId===productId)
-              ? oldCtx.productCache
+          const cachedItem = oldCtx.productCache.find(item =>item.itemId===productId)
+          const updatedProductCache = cachedItem
+              ? oldCtx.productCache.map(el=>el.itemId===productId?productData:el)
               : [...oldCtx.productCache, productData]
           ;
           
@@ -86,11 +92,12 @@ export default function ProductPage() {
     return () => {
       controller.abort();
     };
-  }, [appContext.productFetchIteration]);
+  }, [appContext.productFetchIteration, productSlug, inventoryCount]);
 
 
   return (
-    <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-12">
+    <>
+    <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-12 mb-8">
       <div className="col-span-6">
         <ProductImageGallery images={product?.images || []} />
       </div>
@@ -101,16 +108,18 @@ export default function ProductPage() {
         <div className="flex flex-col gap-4 col-span-6">
           <h1 className="text-3xl font-semibold">{product.item?.item_data.name}</h1>
           <p className="text-2xl font-medium text-gray-700">
-            
-            {isAvailable
-              ? <span>{formatCurrency(
-                  product.item?.item_data.variations[0].item_variation_data.price_money.amount
-                )}</span>
+            {inventoryCount
+              ? isAvailable
+                ? <span>{formatCurrency(
+                    product.item?.item_data.variations[0].item_variation_data.price_money.amount
+                  )}</span>
 
-              : <span className="text-stone-500 font-normal px-3 py-1.5 border rounded">
-                  SOLD
-                </span>
+                : <span className="text-stone-500 font-normal px-3 py-1.5 border rounded">
+                    SOLD
+                  </span>
+              : <span><LoadingBar/></span>
             }
+            
           </p>
 
           <p className="text-gray-600 leading-relaxed">
@@ -120,7 +129,7 @@ export default function ProductPage() {
           {/* Actions */}
           {isAvailable && <div className="flex gap-4 mt-4">
             <button 
-              className="flex justify-center items-center bg-stone-900 text-white w-40 px-8 py-3 rounded hover:opacity-90 transition"
+              className="flex justify-center items-center bg-stone-900 text-white w-40 px-8 py-3 rounded hover:opacity-90 transition cursor-pointer"
               onClick={()=>addToCart(product.item)}
             >
               {isCheckoutLoading
@@ -132,7 +141,7 @@ export default function ProductPage() {
               }
             </button>
             <button 
-              className=" flex gap-3 items-center border border-gray-500 pl-5 pr-6 py-3 rounded hover:bg-gray-100 transition"
+              className=" flex gap-3 items-center border border-gray-500 pl-5 pr-6 py-3 rounded hover:bg-gray-100 transition cursor-pointer"
               onClick={()=>addToCart(product.item)}
             >
               <ShoppingBagIcon />
@@ -141,6 +150,11 @@ export default function ProductPage() {
           </div>}
         </div>
       )}
+
     </div>
+    <CollectionsList/>
+    <RecentProducts/>    
+    </>
+
   );
 }

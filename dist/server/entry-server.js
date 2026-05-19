@@ -1,8 +1,21 @@
 import { useEffect, useState } from "react";
 import { renderToString } from "react-dom/server";
-import { Link, Outlet, Route, Routes, StaticRouter, matchPath, useMatch, useOutletContext, useParams, useSearchParams } from "react-router-dom";
+import { Link, Outlet, Route, Routes, StaticRouter, matchPath, useLocation, useMatch, useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
+//#region src/components/ScrollToTop.jsx
+function ScrollToTop() {
+	const { pathname } = useLocation();
+	useEffect(() => {
+		window.scrollTo({
+			top: 0,
+			left: 0,
+			behavior: "instant"
+		});
+	}, [pathname]);
+	return null;
+}
+//#endregion
 //#region src/Icons/BarsIcon.jsx
 function BarsIcon({ className }) {
 	return /* @__PURE__ */ jsx("svg", {
@@ -122,7 +135,7 @@ function Header({ isLoading, appContext, setCartOpen }) {
 		style: { backgroundImage: `url(${basicHeader ? "" : heroUrl})` },
 		children: [
 			isLoading ? !basicHeader && /* @__PURE__ */ jsx(LoadingBars, {}) : !basicHeader && /* @__PURE__ */ jsx("div", {
-				className: "absolute inset-0 bg-gradient-to-b from-black/30 to-transparent",
+				className: "absolute inset-0 bg-linear-to-b from-black/30 to-transparent",
 				children: /* @__PURE__ */ jsx("p", {
 					className: " flex h-96 justify-center items-center text-3xl uppercase font-light text-white",
 					children: collectionName
@@ -209,7 +222,7 @@ function formatCurrency(cents, locale = "en-AU", currency = "AUD") {
 }
 //#endregion
 //#region src/components/cartDrawer/CartDrawer.jsx
-function CartDrawer({ isOpen, setIsOpen, cart, removeFromCart, refreshProducts }) {
+function CartDrawer({ isOpen, setIsOpen, cart, removeFromCart, clearCart, refreshProducts }) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [cartMessage, setCartMessage] = useState("");
 	const total = cart.reduce((sum, item) => sum + item.item_data.variations[0].item_variation_data.price_money.amount, 0);
@@ -259,10 +272,24 @@ function CartDrawer({ isOpen, setIsOpen, cart, removeFromCart, refreshProducts }
 								className: "text-lg font-semibold",
 								children: "Shopping Cart"
 							}),
-							!!cart.length && /* @__PURE__ */ jsx("div", {
+							!!cart.length && /* @__PURE__ */ jsxs(Fragment, { children: [/* @__PURE__ */ jsx("div", {
 								className: "flex justify-center items-center bg-amber-200 rounded-full h-6 w-6 text-sm",
 								children: cart.length
-							})
+							}), /* @__PURE__ */ jsx("button", {
+								onClick: clearCart,
+								className: "text-stone-500 text-sm hover:scale-125 transition-transform",
+								children: /* @__PURE__ */ jsx("svg", {
+									xmlns: "http://www.w3.org/2000/svg",
+									viewBox: "0 0 16 16",
+									fill: "currentColor",
+									className: "size-4",
+									children: /* @__PURE__ */ jsx("path", {
+										fillRule: "evenodd",
+										d: "M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z",
+										clipRule: "evenodd"
+									})
+								})
+							})] })
 						]
 					}), /* @__PURE__ */ jsx("button", {
 						className: "hover:bg-black/10 rounded-full p-1",
@@ -417,6 +444,12 @@ function App({ initialData }) {
 			cart: appContext.cart.filter((el) => !idsToRemove.has(el.id))
 		}));
 	};
+	const clearCart = () => {
+		setAppContext((oldCtx) => ({
+			...oldCtx,
+			cart: []
+		}));
+	};
 	useEffect(() => {
 		const controller = new AbortController();
 		const fetchData = async () => {
@@ -485,6 +518,7 @@ function App({ initialData }) {
 				setIsOpen: setCartOpen,
 				cart: appContext.cart,
 				removeFromCart,
+				clearCart,
 				refreshProducts
 			})
 		]
@@ -638,9 +672,9 @@ function ProductList({ categoryId, tag }) {
 		return () => {
 			controller.abort();
 		};
-	}, [productFetchIteration]);
+	}, [productFetchIteration, categoryId]);
 	return /* @__PURE__ */ jsx("div", {
-		className: "max-w-7xl mx-auto ",
+		className: "mb-8 max-w-7xl mx-auto ",
 		children: /* @__PURE__ */ jsx("div", {
 			className: "grid gap-6 sm:grid-cols-2 lg:grid-cols-3",
 			children: productsData.map((product) => /* @__PURE__ */ jsx(ProductCard, {
@@ -648,39 +682,6 @@ function ProductList({ categoryId, tag }) {
 				loadingProducts
 			}, product.id))
 		})
-	});
-}
-//#endregion
-//#region src/pages/Collection/Collection.jsx
-function Collection() {
-	const { collectionSlug } = useParams();
-	const { appContext } = useOutletContext();
-	const collection = appContext.collections.find((el) => el.slug === collectionSlug);
-	return /* @__PURE__ */ jsxs(Fragment, { children: [/* @__PURE__ */ jsxs(Helmet, { children: [
-		/* @__PURE__ */ jsx("title", { children: collection.name }),
-		/* @__PURE__ */ jsx("meta", {
-			name: "description",
-			content: appContext.metaDescription
-		}),
-		/* @__PURE__ */ jsx("meta", {
-			property: "og:title",
-			content: collection.name
-		})
-	] }), collection && /* @__PURE__ */ jsx(ProductList, { categoryId: collection.id })] });
-}
-//#endregion
-//#region src/pages/Contact/Contact.jsx
-function Contact() {
-	return /* @__PURE__ */ jsxs("div", {
-		className: "flex justify-center items-center flex-col h-80",
-		children: [/* @__PURE__ */ jsx("p", {
-			className: " text-xl text-slate-700 ",
-			children: "Please send an email to: "
-		}), /* @__PURE__ */ jsx("a", {
-			className: "mt-4 border-b-2 border-emerald-400 hover:text-slate-500",
-			href: "mailto:lenivisual@gmail.com",
-			children: "lenivisual@gmail.com"
-		})]
 	});
 }
 //#endregion
@@ -739,7 +740,7 @@ function CollectionsList() {
 			className: "mb-1 flex items-center text-gray-800",
 			children: [/* @__PURE__ */ jsx(RectangleStack, { className: "mr-1" }), /* @__PURE__ */ jsx("div", {
 				className: "uppercase text-sm",
-				children: "Art Collections"
+				children: "Curated Art Collections"
 			})]
 		}), /* @__PURE__ */ jsx("div", {
 			className: "grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ",
@@ -777,6 +778,44 @@ function RecentProducts() {
 			children: "Recently Crafted"
 		})]
 	}), /* @__PURE__ */ jsx(ProductList, { tag: "new" })] });
+}
+//#endregion
+//#region src/pages/Collection/Collection.jsx
+function Collection() {
+	const { collectionSlug } = useParams();
+	const { appContext } = useOutletContext();
+	const collection = appContext.collections.find((el) => el.slug === collectionSlug);
+	return /* @__PURE__ */ jsxs(Fragment, { children: [
+		/* @__PURE__ */ jsxs(Helmet, { children: [
+			/* @__PURE__ */ jsx("title", { children: collection.name }),
+			/* @__PURE__ */ jsx("meta", {
+				name: "description",
+				content: appContext.metaDescription
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				property: "og:title",
+				content: collection.name
+			})
+		] }),
+		collection && /* @__PURE__ */ jsx(ProductList, { categoryId: collection.id }),
+		/* @__PURE__ */ jsx(CollectionsList, {}),
+		/* @__PURE__ */ jsx(RecentProducts, {})
+	] });
+}
+//#endregion
+//#region src/pages/Contact/Contact.jsx
+function Contact() {
+	return /* @__PURE__ */ jsxs("div", {
+		className: "flex justify-center items-center flex-col h-80",
+		children: [/* @__PURE__ */ jsx("p", {
+			className: " text-xl text-slate-700 ",
+			children: "Please send an email to: "
+		}), /* @__PURE__ */ jsx("a", {
+			className: "mt-4 border-b-2 border-emerald-400 hover:text-slate-500",
+			href: "mailto:lenivisual@gmail.com",
+			children: "lenivisual@gmail.com"
+		})]
+	});
 }
 //#endregion
 //#region src/pages/Home/Home.jsx
@@ -828,6 +867,9 @@ function ProductImageGallery({ images = [] }) {
 		window.addEventListener("keydown", handleKey);
 		return () => window.removeEventListener("keydown", handleKey);
 	}, [isOpen]);
+	useEffect(() => {
+		setSelectedIndex(0);
+	}, [images.length]);
 	if (!images.length) return /* @__PURE__ */ jsx("div", {
 		className: "w-full h-64 flex items-center justify-center bg-gray-100 rounded",
 		children: /* @__PURE__ */ jsx("span", {
@@ -849,7 +891,7 @@ function ProductImageGallery({ images = [] }) {
 			className: "flex gap-3 overflow-x-auto pb-2",
 			children: images.map((img, index) => /* @__PURE__ */ jsx("button", {
 				onClick: () => setSelectedIndex(index),
-				className: `flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition ${selectedIndex === index ? "border-stone-500" : "border-transparent opacity-70 hover:opacity-100"}`,
+				className: `shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition ${selectedIndex === index ? "border-stone-500" : "border-transparent opacity-70 hover:opacity-100"}`,
 				children: /* @__PURE__ */ jsx("img", {
 					src: img,
 					alt: `Thumbnail ${index + 1}`,
@@ -911,6 +953,20 @@ function ProductInfoSkeleton() {
 	});
 }
 //#endregion
+//#region src/Icons/LoadingBar.jsx
+function LoadingBar() {
+	return /* @__PURE__ */ jsx("svg", {
+		viewBox: "0 0 100 4",
+		xmlns: "http://www.w3.org/2000/svg",
+		className: "loading-bar w-16",
+		children: /* @__PURE__ */ jsx("rect", {
+			className: "loading-bar__rect",
+			width: "100",
+			height: "4"
+		})
+	});
+}
+//#endregion
 //#region src/pages/Product/Product.jsx
 function ProductPage() {
 	const { productSlug } = useParams();
@@ -922,6 +978,7 @@ function ProductPage() {
 	const [product, setProduct] = useState(cachedProduct || {});
 	const [isLoading, setIsLoading] = useState(cachedProduct ? false : true);
 	const [isCheckoutLoading, setCheckoutLoading] = useState(false);
+	const inventoryCount = product.item?.item_data.variations[0].inventoryCount;
 	const isAvailable = product.item?.item_data.variations[0].inventoryCount >= 1;
 	const addToCart = (item) => {
 		const existingItem = appContext.cart.find((cartItem) => cartItem.id === item.id);
@@ -937,7 +994,7 @@ function ProductPage() {
 			try {
 				const res = await fetch(`/api/items/${productId}`, {
 					signal: controller.signal,
-					headers: cachedProduct && productETag ? { "If-None-Match": productETag } : {}
+					headers: cachedProduct && inventoryCount && productETag ? { "If-None-Match": productETag } : {}
 				});
 				if (res.status === 304) {
 					setProduct(cachedProduct);
@@ -949,7 +1006,7 @@ function ProductPage() {
 				setProduct(productData);
 				setIsLoading(false);
 				setAppContext((oldCtx) => {
-					const updatedProductCache = oldCtx.productCache.find((item) => item.itemId === productId) ? oldCtx.productCache : [...oldCtx.productCache, productData];
+					const updatedProductCache = oldCtx.productCache.find((item) => item.itemId === productId) ? oldCtx.productCache.map((el) => el.itemId === productId ? productData : el) : [...oldCtx.productCache, productData];
 					return {
 						...oldCtx,
 						productCache: updatedProductCache,
@@ -964,62 +1021,70 @@ function ProductPage() {
 		return () => {
 			controller.abort();
 		};
-	}, [appContext.productFetchIteration]);
-	return /* @__PURE__ */ jsxs("div", {
-		className: "grid gap-6 sm:grid-cols-1 lg:grid-cols-12",
-		children: [/* @__PURE__ */ jsx("div", {
-			className: "col-span-6",
-			children: /* @__PURE__ */ jsx(ProductImageGallery, { images: product?.images || [] })
-		}), isLoading ? /* @__PURE__ */ jsx(ProductInfoSkeleton, {}) : /* @__PURE__ */ jsxs("div", {
-			className: "flex flex-col gap-4 col-span-6",
-			children: [
-				/* @__PURE__ */ jsx("h1", {
-					className: "text-3xl font-semibold",
-					children: product.item?.item_data.name
-				}),
-				/* @__PURE__ */ jsx("p", {
-					className: "text-2xl font-medium text-gray-700",
-					children: isAvailable ? /* @__PURE__ */ jsx("span", { children: formatCurrency(product.item?.item_data.variations[0].item_variation_data.price_money.amount) }) : /* @__PURE__ */ jsx("span", {
-						className: "text-stone-500 font-normal px-3 py-1.5 border rounded",
-						children: "SOLD"
+	}, [
+		appContext.productFetchIteration,
+		productSlug,
+		inventoryCount
+	]);
+	return /* @__PURE__ */ jsxs(Fragment, { children: [
+		/* @__PURE__ */ jsxs("div", {
+			className: "grid gap-6 sm:grid-cols-1 lg:grid-cols-12 mb-8",
+			children: [/* @__PURE__ */ jsx("div", {
+				className: "col-span-6",
+				children: /* @__PURE__ */ jsx(ProductImageGallery, { images: product?.images || [] })
+			}), isLoading ? /* @__PURE__ */ jsx(ProductInfoSkeleton, {}) : /* @__PURE__ */ jsxs("div", {
+				className: "flex flex-col gap-4 col-span-6",
+				children: [
+					/* @__PURE__ */ jsx("h1", {
+						className: "text-3xl font-semibold",
+						children: product.item?.item_data.name
+					}),
+					/* @__PURE__ */ jsx("p", {
+						className: "text-2xl font-medium text-gray-700",
+						children: inventoryCount ? isAvailable ? /* @__PURE__ */ jsx("span", { children: formatCurrency(product.item?.item_data.variations[0].item_variation_data.price_money.amount) }) : /* @__PURE__ */ jsx("span", {
+							className: "text-stone-500 font-normal px-3 py-1.5 border rounded",
+							children: "SOLD"
+						}) : /* @__PURE__ */ jsx("span", { children: /* @__PURE__ */ jsx(LoadingBar, {}) })
+					}),
+					/* @__PURE__ */ jsx("p", {
+						className: "text-gray-600 leading-relaxed",
+						children: product.item?.item_data.description
+					}),
+					isAvailable && /* @__PURE__ */ jsxs("div", {
+						className: "flex gap-4 mt-4",
+						children: [/* @__PURE__ */ jsx("button", {
+							className: "flex justify-center items-center bg-stone-900 text-white w-40 px-8 py-3 rounded hover:opacity-90 transition cursor-pointer",
+							onClick: () => addToCart(product.item),
+							children: isCheckoutLoading ? /* @__PURE__ */ jsxs("svg", {
+								className: "animate-spin h-5 w-5 text-white",
+								xmlns: "http://www.w3.org/2000/svg",
+								fill: "none",
+								viewBox: "0 0 24 24",
+								children: [/* @__PURE__ */ jsx("circle", {
+									className: "opacity-25",
+									cx: "12",
+									cy: "12",
+									r: "10",
+									stroke: "currentColor",
+									strokeWidth: "4"
+								}), /* @__PURE__ */ jsx("path", {
+									className: "opacity-75",
+									fill: "currentColor",
+									d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+								})]
+							}) : /* @__PURE__ */ jsx("span", { children: "Buy Now" })
+						}), /* @__PURE__ */ jsxs("button", {
+							className: " flex gap-3 items-center border border-gray-500 pl-5 pr-6 py-3 rounded hover:bg-gray-100 transition cursor-pointer",
+							onClick: () => addToCart(product.item),
+							children: [/* @__PURE__ */ jsx(ShoppingBagIcon, {}), /* @__PURE__ */ jsx("span", { children: "Add to Cart" })]
+						})]
 					})
-				}),
-				/* @__PURE__ */ jsx("p", {
-					className: "text-gray-600 leading-relaxed",
-					children: product.item?.item_data.description
-				}),
-				isAvailable && /* @__PURE__ */ jsxs("div", {
-					className: "flex gap-4 mt-4",
-					children: [/* @__PURE__ */ jsx("button", {
-						className: "flex justify-center items-center bg-stone-900 text-white w-40 px-8 py-3 rounded hover:opacity-90 transition",
-						onClick: () => addToCart(product.item),
-						children: isCheckoutLoading ? /* @__PURE__ */ jsxs("svg", {
-							className: "animate-spin h-5 w-5 text-white",
-							xmlns: "http://www.w3.org/2000/svg",
-							fill: "none",
-							viewBox: "0 0 24 24",
-							children: [/* @__PURE__ */ jsx("circle", {
-								className: "opacity-25",
-								cx: "12",
-								cy: "12",
-								r: "10",
-								stroke: "currentColor",
-								strokeWidth: "4"
-							}), /* @__PURE__ */ jsx("path", {
-								className: "opacity-75",
-								fill: "currentColor",
-								d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-							})]
-						}) : /* @__PURE__ */ jsx("span", { children: "Buy Now" })
-					}), /* @__PURE__ */ jsxs("button", {
-						className: " flex gap-3 items-center border border-gray-500 pl-5 pr-6 py-3 rounded hover:bg-gray-100 transition",
-						onClick: () => addToCart(product.item),
-						children: [/* @__PURE__ */ jsx(ShoppingBagIcon, {}), /* @__PURE__ */ jsx("span", { children: "Add to Cart" })]
-					})]
-				})
-			]
-		})]
-	});
+				]
+			})]
+		}),
+		/* @__PURE__ */ jsx(CollectionsList, {}),
+		/* @__PURE__ */ jsx(RecentProducts, {})
+	] });
 }
 //#endregion
 //#region src/pages/Order/OrderSuccessPage.jsx
@@ -1271,9 +1336,9 @@ async function render(url, req) {
 	return {
 		appHtml: renderToString(/* @__PURE__ */ jsx(HelmetProvider, {
 			context: helmetContext,
-			children: /* @__PURE__ */ jsx(StaticRouter, {
+			children: /* @__PURE__ */ jsxs(StaticRouter, {
 				location: url,
-				children: /* @__PURE__ */ jsxs(Routes, { children: [/* @__PURE__ */ jsxs(Route, {
+				children: [/* @__PURE__ */ jsx(ScrollToTop, {}), /* @__PURE__ */ jsxs(Routes, { children: [/* @__PURE__ */ jsxs(Route, {
 					path: "/",
 					element: /* @__PURE__ */ jsx(App, { initialData }),
 					children: [
@@ -1304,7 +1369,7 @@ async function render(url, req) {
 						style: { padding: "1rem" },
 						children: /* @__PURE__ */ jsx("p", { children: "There's nothing here!" })
 					})
-				})] })
+				})] })]
 			})
 		})),
 		initialData,

@@ -56,6 +56,12 @@ function App({initialData}) {
       cart: appContext.cart.filter(el => !idsToRemove.has(el.id))
     }));
   };
+  const clearCart = () => {    
+    setAppContext(oldCtx=>({
+      ...oldCtx,
+      cart: []
+    }));
+  };
   
   
 
@@ -145,6 +151,7 @@ function App({initialData}) {
         setIsOpen={setCartOpen}
         cart={appContext.cart}
         removeFromCart={removeFromCart}
+        clearCart={clearCart}
         refreshProducts={refreshProducts}
       />
 

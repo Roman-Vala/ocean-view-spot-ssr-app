@@ -128,10 +128,10 @@ export default function ProductList({categoryId, tag}) {
     return () => {
       controller.abort();
     };
-  }, [productFetchIteration]);
+  }, [productFetchIteration, categoryId]);
 
   return (
-    <div className="max-w-7xl mx-auto ">
+    <div className="mb-8 max-w-7xl mx-auto ">
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {productsData.map(product => (
           <ProductCard 

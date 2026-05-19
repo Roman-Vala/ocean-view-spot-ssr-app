@@ -3,6 +3,9 @@ import { Helmet } from "react-helmet-async";
 
 import { useParams, useOutletContext } from "react-router-dom";
 import ProductList from '../../components/productList/ProductList';
+import CollectionsList from '../../components/collectionList/CollectionsList';
+import RecentProducts from '../../components/productList/RecentProducts';
+
 
 export default function Collection() {
 
@@ -29,7 +32,10 @@ export default function Collection() {
         />
       </Helmet>
 
-      {collection && <ProductList categoryId={collection.id}/>}     
+      {collection && <ProductList categoryId={collection.id}/>} 
+
+      <CollectionsList/>
+      <RecentProducts/>
 
     </>
   )

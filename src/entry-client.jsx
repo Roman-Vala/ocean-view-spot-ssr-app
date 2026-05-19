@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from "react-helmet-async";
+import ScrollToTop from './components/ScrollToTop';
 
 import App from './App'
 import './styles.css'
@@ -22,6 +23,7 @@ ReactDOM.hydrateRoot(
   document.getElementById('root'),
   <HelmetProvider>
     <BrowserRouter>
+      <ScrollToTop/>
       <Routes>
         <Route path="/" element={<App initialData={initialData} />}>
           <Route index element={<Home />} />
