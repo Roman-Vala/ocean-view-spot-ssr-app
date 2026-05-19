@@ -937,22 +937,6 @@ function ProductImageGallery({ images = [] }) {
 * <ProductImageGallery images={images} />
 */
 //#endregion
-//#region src/pages/Product/ProductInfoSkeleton.jsx
-function ProductInfoSkeleton() {
-	return /* @__PURE__ */ jsxs("div", {
-		className: "flex flex-col gap-4 col-span-6",
-		children: [
-			/* @__PURE__ */ jsx("h1", { className: " bg-slate-100 h-10 w-96 rounded" }),
-			/* @__PURE__ */ jsx("p", { className: "bg-slate-100 h-8 w-16 rounded" }),
-			/* @__PURE__ */ jsx("p", { className: "bg-slate-100 h-4 w-60 rounded" }),
-			/* @__PURE__ */ jsx("p", { className: "bg-slate-100 h-4 w-40 rounded" }),
-			/* @__PURE__ */ jsx("p", { className: "bg-slate-100 h-4 w-32 rounded" }),
-			/* @__PURE__ */ jsx("p", { className: "bg-slate-100 h-4 w-56 rounded" }),
-			/* @__PURE__ */ jsx("p", { className: "bg-slate-100 h-4 w-40 rounded" })
-		]
-	});
-}
-//#endregion
 //#region src/Icons/LoadingBar.jsx
 function LoadingBar() {
 	return /* @__PURE__ */ jsx("svg", {
@@ -964,6 +948,25 @@ function LoadingBar() {
 			width: "100",
 			height: "4"
 		})
+	});
+}
+//#endregion
+//#region src/pages/Product/ProductInfoSkeleton.jsx
+function ProductInfoSkeleton() {
+	return /* @__PURE__ */ jsxs("div", {
+		className: "flex flex-col gap-4 col-span-6",
+		children: [
+			/* @__PURE__ */ jsx("h1", { className: " bg-slate-100 h-10 w-96 rounded" }),
+			/* @__PURE__ */ jsx("p", {
+				className: "h-8 w-16 rounded",
+				children: /* @__PURE__ */ jsx(LoadingBar, {})
+			}),
+			/* @__PURE__ */ jsx("p", { className: "bg-slate-100 h-4 w-60 rounded" }),
+			/* @__PURE__ */ jsx("p", { className: "bg-slate-100 h-4 w-40 rounded" }),
+			/* @__PURE__ */ jsx("p", { className: "bg-slate-100 h-4 w-32 rounded" }),
+			/* @__PURE__ */ jsx("p", { className: "bg-slate-100 h-4 w-56 rounded" }),
+			/* @__PURE__ */ jsx("p", { className: "bg-slate-100 h-4 w-40 rounded" })
+		]
 	});
 }
 //#endregion
@@ -991,6 +994,7 @@ function ProductPage() {
 	useEffect(() => {
 		const controller = new AbortController();
 		const fetchItemData = async () => {
+			setIsLoading(true);
 			try {
 				const res = await fetch(`/api/items/${productId}`, {
 					signal: controller.signal,

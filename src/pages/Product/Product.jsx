@@ -46,7 +46,7 @@ export default function ProductPage() {
 
     const fetchItemData = async () => {
       // console.log('fetching data');
-
+      setIsLoading(true);
       try {
         const res = await fetch(`/api/items/${productId}`, { 
           signal: controller.signal,
