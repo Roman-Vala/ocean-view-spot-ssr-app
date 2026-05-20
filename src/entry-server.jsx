@@ -71,7 +71,7 @@ async function getProductData(req,productSlug) {
 async function getCollectionProducts(req,collectionSlug) {
     const segmentArray = collectionSlug.split('-');
     const collectionId = segmentArray[segmentArray.length-1];
-    const collectionProducts = await fetchJson(req, `/api/items?categoryId=${collectionId}`);
+    const collectionProducts = await fetchJson(req, `/api/category-items/${collectionId}`);
 
     const homeData = await getHomeData(req);
     const updatedCollections = homeData.collections.map(col =>
