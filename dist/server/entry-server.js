@@ -981,7 +981,7 @@ function ProductPage() {
 	const [product, setProduct] = useState(cachedProduct || {});
 	const [isLoading, setIsLoading] = useState(cachedProduct ? false : true);
 	const [isCheckoutLoading, setCheckoutLoading] = useState(false);
-	const inventoryCount = product.item?.item_data.variations[0].inventoryCount;
+	const inventoryCount = product.item?.item_data.variations[0].inventoryCount?.toString();
 	const isAvailable = product.item?.item_data.variations[0].inventoryCount >= 1;
 	const addToCart = (item) => {
 		const existingItem = appContext.cart.find((cartItem) => cartItem.id === item.id);

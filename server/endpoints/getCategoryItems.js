@@ -80,7 +80,7 @@ export default async function getCategoryItems(req, res, next) {
   // 5️ Flatten response
   const itemsData = items.map(item => {
     const variation = item.item_data.variations?.[0]; // simple case: first variation
-    const customAttributes = Object.values(item?.custom_attribute_values);
+    const customAttributes = Object.values(item?.custom_attribute_values || {});
     const slug = customAttributes.find(el=>el.name==="slug");
     const headline = customAttributes.find(el=>el.name==="headline");
     

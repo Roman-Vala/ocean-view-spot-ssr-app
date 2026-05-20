@@ -25,10 +25,8 @@ export default function ProductPage() {
   const [isLoading, setIsLoading] = useState(cachedProduct ? false : true);
   const [isCheckoutLoading, setCheckoutLoading] = useState(false);
 
-  const inventoryCount = product.item?.item_data.variations[0].inventoryCount;
+  const inventoryCount = product.item?.item_data.variations[0].inventoryCount?.toString();
   const isAvailable = product.item?.item_data.variations[0].inventoryCount >= 1;
-
-  // console.log(product.item?.item_data.variations[0].inventoryCount);
 
   const addToCart = (item) => {
     const existingItem = appContext.cart.find((cartItem) => cartItem.id === item.id);
