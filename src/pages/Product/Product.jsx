@@ -122,8 +122,10 @@ export default function ProductPage() {
             
           </p>
 
-          <p className="text-gray-600 leading-relaxed">
-            {product.item?.item_data.description}
+          <p className="text-gray-600 leading-relaxed"
+             dangerouslySetInnerHTML={{ __html: product.item?.item_data.description_html }}
+          >
+            
           </p>
 
           {/* Actions */}

@@ -66,7 +66,9 @@ export default function ProductList({categoryId, tag}) {
 
   const query = params.toString();
 
-  const itemsUrl =  query ? `/api/items?${query}` : '/api/items';
+  const itemsUrl =  categoryId
+    ? `/api/category-items/${categoryId}`
+    : query ? `/api/items?${query}` : '/api/items';
 
   
   useEffect(() => {

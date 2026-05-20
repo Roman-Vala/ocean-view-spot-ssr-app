@@ -64,7 +64,7 @@ export default async function getItemsByCategoryOrTag(req, res, next) {
   // console.log(itemsResp);
   
   const items = itemsResp.items || [];
-  const variationIds = itemsResp.matched_variation_ids || []
+  const variationIds = itemsResp.matched_variation_ids || [];
 
   // 2️ Collect img IDs
   const imageIds = new Set();
@@ -116,7 +116,7 @@ export default async function getItemsByCategoryOrTag(req, res, next) {
       id: item.id,
       itemId:item.id,
       name: item.item_data?.name,
-      description: item.item_data?.description,
+      description: item.item_data?.description_html,
       categoryId: item.item_data?.reporting_category?.id,
       headline: headline?.string_value,
       slug: slug

@@ -627,7 +627,7 @@ function ProductList({ categoryId, tag }) {
 	if (categoryId) params.append("categoryId", categoryId);
 	if (tag) params.append("tag", tag);
 	const query = params.toString();
-	const itemsUrl = query ? `/api/items?${query}` : "/api/items";
+	const itemsUrl = categoryId ? `/api/category-items/${categoryId}` : query ? `/api/items?${query}` : "/api/items";
 	useEffect(() => {
 		const controller = new AbortController();
 		const fetchProductsData = async () => {
@@ -1052,7 +1052,7 @@ function ProductPage() {
 					}),
 					/* @__PURE__ */ jsx("p", {
 						className: "text-gray-600 leading-relaxed",
-						children: product.item?.item_data.description
+						dangerouslySetInnerHTML: { __html: product.item?.item_data.description_html }
 					}),
 					isAvailable && /* @__PURE__ */ jsxs("div", {
 						className: "flex gap-4 mt-4",
