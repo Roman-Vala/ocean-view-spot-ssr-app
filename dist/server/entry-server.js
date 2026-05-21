@@ -465,6 +465,7 @@ function App({ initialData }) {
 					collectionsRes.json(),
 					siteMetaRes.json()
 				]);
+				console.log(collectionsData);
 				setAppContext((oldCtx) => ({
 					...oldCtx,
 					metaTitle: siteMetaData.location.name,
@@ -711,7 +712,7 @@ function CollectionCard({ item, loadingCollections }) {
 			backgroundSize: "cover",
 			backgroundPosition: "center"
 		},
-		children: [loadingCollections ? /* @__PURE__ */ jsx(LoadingBars, { width: 10 }) : /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-black/40  to-black/0" }), /* @__PURE__ */ jsxs(Link, {
+		children: [loadingCollections ? /* @__PURE__ */ jsx(LoadingBars, { width: 10 }) : /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-linear-to-b from-black/40  to-black/0" }), /* @__PURE__ */ jsxs(Link, {
 			className: "relative px-5 py-3 flex flex-col h-40 text-sm  cursor-pointer font-semibold",
 			to: `/collection/${item.slug}`,
 			children: [/* @__PURE__ */ jsx("h3", {
@@ -786,17 +787,20 @@ function Collection() {
 	const { appContext } = useOutletContext();
 	const collection = appContext.collections.find((el) => el.slug === collectionSlug);
 	return /* @__PURE__ */ jsxs(Fragment, { children: [
-		/* @__PURE__ */ jsxs(Helmet, { children: [
-			/* @__PURE__ */ jsx("title", { children: collection.name }),
-			/* @__PURE__ */ jsx("meta", {
-				name: "description",
-				content: appContext.metaDescription
-			}),
-			/* @__PURE__ */ jsx("meta", {
-				property: "og:title",
-				content: collection.name
-			})
-		] }),
+		/* @__PURE__ */ jsxs(Helmet, {
+			defer: false,
+			children: [
+				/* @__PURE__ */ jsx("title", { children: collection?.seoTitle || collection?.name }),
+				/* @__PURE__ */ jsx("meta", {
+					name: "description",
+					content: collection.seoDescription
+				}),
+				/* @__PURE__ */ jsx("meta", {
+					property: "og:title",
+					content: collection?.seoTitle || collection?.name
+				})
+			]
+		}, collectionSlug),
 		collection && /* @__PURE__ */ jsx(ProductList, { categoryId: collection.id }),
 		/* @__PURE__ */ jsx(CollectionsList, {}),
 		/* @__PURE__ */ jsx(RecentProducts, {})
@@ -822,17 +826,20 @@ function Contact() {
 function Home() {
 	const { appContext } = useOutletContext();
 	return /* @__PURE__ */ jsxs(Fragment, { children: [
-		/* @__PURE__ */ jsxs(Helmet, { children: [
-			/* @__PURE__ */ jsx("title", { children: appContext.metaTitle }),
-			/* @__PURE__ */ jsx("meta", {
-				name: "description",
-				content: appContext.metaDescription
-			}),
-			/* @__PURE__ */ jsx("meta", {
-				property: "og:title",
-				content: appContext.metaTitle
-			})
-		] }),
+		/* @__PURE__ */ jsxs(Helmet, {
+			defer: false,
+			children: [
+				/* @__PURE__ */ jsx("title", { children: appContext.metaTitle }),
+				/* @__PURE__ */ jsx("meta", {
+					name: "description",
+					content: appContext.metaDescription
+				}),
+				/* @__PURE__ */ jsx("meta", {
+					property: "og:title",
+					content: appContext.metaTitle
+				})
+			]
+		}, "home"),
 		/* @__PURE__ */ jsx(CollectionsList, {}),
 		/* @__PURE__ */ jsx(RecentProducts, {})
 	] });
@@ -983,6 +990,10 @@ function ProductPage() {
 	const [isCheckoutLoading, setCheckoutLoading] = useState(false);
 	const inventoryCount = product.item?.item_data.variations[0].inventoryCount?.toString();
 	const isAvailable = product.item?.item_data.variations[0].inventoryCount >= 1;
+	const seoTitle = Object.values(product.item?.custom_attribute_values || {}).find((el) => el.name === "seo-title")?.string_value;
+	const seoDescription = Object.values(product.item?.custom_attribute_values || {}).find((el) => el.name === "seo-description")?.string_value;
+	const productName = product.item?.item_data.name || "";
+	const productDescription = product.item?.item_data.description || "";
 	const addToCart = (item) => {
 		const existingItem = appContext.cart.find((cartItem) => cartItem.id === item.id);
 		setAppContext({
@@ -1031,6 +1042,20 @@ function ProductPage() {
 		inventoryCount
 	]);
 	return /* @__PURE__ */ jsxs(Fragment, { children: [
+		/* @__PURE__ */ jsxs(Helmet, {
+			defer: false,
+			children: [
+				/* @__PURE__ */ jsx("title", { children: seoTitle || productName }),
+				/* @__PURE__ */ jsx("meta", {
+					name: "description",
+					content: seoDescription || productDescription
+				}),
+				/* @__PURE__ */ jsx("meta", {
+					property: "og:title",
+					content: seoTitle || productName
+				})
+			]
+		}, productSlug),
 		/* @__PURE__ */ jsxs("div", {
 			className: "grid gap-6 sm:grid-cols-1 lg:grid-cols-12 mb-8",
 			children: [/* @__PURE__ */ jsx("div", {
@@ -1041,7 +1066,7 @@ function ProductPage() {
 				children: [
 					/* @__PURE__ */ jsx("h1", {
 						className: "text-3xl font-semibold",
-						children: product.item?.item_data.name
+						children: productName
 					}),
 					/* @__PURE__ */ jsx("p", {
 						className: "text-2xl font-medium text-gray-700",

@@ -11,7 +11,7 @@ export default function Home() {
 
   return (
     <>
-      <Helmet>
+      <Helmet key='home' defer={false}>
         <title>{appContext.metaTitle}</title>
 
         <meta

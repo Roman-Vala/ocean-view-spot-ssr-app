@@ -18,7 +18,7 @@ export default function CollectionCard({item, loadingCollections}) {
       {loadingCollections ? (
         <LoadingBars width={10}/>
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40  to-black/0" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/40  to-black/0" />
       )}
 
       {/* Content */}

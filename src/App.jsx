@@ -86,6 +86,8 @@ function App({initialData}) {
           siteMetaRes.json()
         ]);
 
+        console.log(collectionsData);
+
         setAppContext(oldCtx=>({
           ...oldCtx,
           metaTitle: siteMetaData.location.name,

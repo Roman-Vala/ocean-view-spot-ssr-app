@@ -13,22 +13,21 @@ export default function Collection() {
   const { appContext } = useOutletContext();
 
   const collection = appContext.collections.find(el=>el.slug===collectionSlug);
-
-
+  // console.log(collection);
 
   return (
     <>
-    <Helmet>
-        <title>{collection.name}</title>
+    <Helmet key={collectionSlug} defer={false}>
+        <title>{collection?.seoTitle || collection?.name}</title>
 
         <meta
           name="description"
-          content={appContext.metaDescription}
+          content={collection.seoDescription}
         />
 
         <meta
           property="og:title"
-          content={collection.name}
+          content={collection?.seoTitle || collection?.name}
         />
       </Helmet>
 

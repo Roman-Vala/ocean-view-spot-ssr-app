@@ -1,28 +1,29 @@
 import crypto from 'crypto';
 import {slugifyText} from '../../utils/slugifyText.js';
+import { squareFetch } from '../server-utils/squareFetch.js';
 
-const SQUARE_BASE_URL = "https://connect.squareup.com";
-const SQUARE_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
+// const SQUARE_BASE_URL = "https://connect.squareup.com";
+// const SQUARE_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 
 //id for custom attribute "tag"
 const tagId = 'XIZMWM7V473IMDCBPE2YIQWD'
 
 // helper for Square requests
-async function squareFetch(path, body) {
-  const res = await fetch(`${SQUARE_BASE_URL}${path}`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${SQUARE_TOKEN}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Square API error: ${text}`);
-  }
-  return res.json();
-};
+// async function squareFetch(path, body) {
+//   const res = await fetch(`${SQUARE_BASE_URL}${path}`, {
+//     method: "POST",
+//     headers: {
+//       "Authorization": `Bearer ${SQUARE_TOKEN}`,
+//       "Content-Type": "application/json"
+//     },
+//     body: JSON.stringify(body)
+//   });
+//   if (!res.ok) {
+//     const text = await res.text();
+//     throw new Error(`Square API error: ${text}`);
+//   }
+//   return res.json();
+// };
 
 export default async function getItemsByCategoryOrTag(req, res, next) {
 
@@ -30,9 +31,10 @@ export default async function getItemsByCategoryOrTag(req, res, next) {
 
   // 0 get catalog latest time to calculate ETag
 
-  const catResp = await squareFetch(
-    "/v2/catalog/search",
-    {object_types: ['TAX'],limit:1}
+  const catResp = await squareFetch("/v2/catalog/search", {
+    body:{object_types: ['TAX'],limit:1}
+  }
+    
   );
   const versionString = catResp.latest_time;
   const etag = crypto.createHash("sha1").update(versionString).digest("hex");
@@ -57,9 +59,10 @@ export default async function getItemsByCategoryOrTag(req, res, next) {
     })
   };
 
-  const itemsResp = await squareFetch(
-    "/v2/catalog/search-catalog-items",
-    searchBody
+  const itemsResp = await squareFetch("/v2/catalog/search-catalog-items", {
+    body: searchBody
+  }
+    
   );
   // console.log(itemsResp);
   
@@ -78,14 +81,13 @@ export default async function getItemsByCategoryOrTag(req, res, next) {
   const [imagesResp, inventoryResp] = await Promise.all([
     imageIds.size
       ? squareFetch("/v2/catalog/batch-retrieve", {
-          object_ids: Array.from(imageIds)
+          body: {object_ids: Array.from(imageIds)}
         })
       : Promise.resolve({ objects: [] }),
 
     variationIds.length
       ? squareFetch("/v2/inventory/counts/batch-retrieve", {
-          catalog_object_ids: variationIds,
-          // location_ids: [LOCATION_ID]
+          body: {catalog_object_ids: variationIds}          
         })
       : Promise.resolve({ counts: [] })
   ]);
