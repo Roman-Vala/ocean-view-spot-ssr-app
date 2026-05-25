@@ -1,3 +1,10 @@
+import Bottleneck from 'bottleneck';
+
+const limiter = new Bottleneck({
+  minTime: 150,
+  maxConcurrent: 5
+});
+
 const SQUARE_BASE_URL = "https://connect.squareup.com";
 
 export async function squareFetch(path, options = {}) {
@@ -8,7 +15,7 @@ export async function squareFetch(path, options = {}) {
     headers = {},
   } = options;
 
-  const response = await fetch(`${SQUARE_BASE_URL}${path}`, {
+  const response = await limiter.schedule(() => fetch(`${SQUARE_BASE_URL}${path}`, {
     method,
     signal,
     headers: {
@@ -17,7 +24,7 @@ export async function squareFetch(path, options = {}) {
       ...headers,
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
-  });
+  }));
 
   if (!response.ok) {
     const message = await response.text();
