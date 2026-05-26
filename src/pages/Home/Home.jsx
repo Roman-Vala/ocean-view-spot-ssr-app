@@ -11,7 +11,7 @@ export default function Home() {
 
   return (
     <>
-      <Helmet key='home' defer={false}>
+      <Helmet >
         <title>{appContext.metaTitle}</title>
 
         <meta
@@ -22,6 +22,19 @@ export default function Home() {
         <meta
           property="og:title"
           content={appContext.metaTitle}
+        />
+        <meta
+          property="og:description"
+          content={appContext.metaDescription}
+        />
+
+        <meta
+          name="twitter:title"
+          content={appContext.metaTitle}
+        />
+        <meta
+          name="twitter:description"
+          content={appContext.metaDescription}
         />
       </Helmet>
       

@@ -30,13 +30,13 @@ export default function ProductPage() {
   const inventoryCount = product.item?.item_data.variations[0].inventoryCount?.toString();
   const isAvailable = product.item?.item_data.variations[0].inventoryCount >= 1;
 
-  const seoTitle = Object.values(product.item?.custom_attribute_values || {}).find(el=>el.name==="seo-title")?.string_value;
-  const seoDescription = Object.values(product.item?.custom_attribute_values || {}).find(el=>el.name==="seo-description")?.string_value;
-
   const productName = product.item?.item_data.name || '';
   const productDescription = product.item?.item_data.description || '';
 
-  // console.log({seoTitle, seoDescription});
+  const seoTitle = product.item?.item_data.ecom_seo_data?.page_title;
+  const seoDescription = product.item?.item_data.ecom_seo_data?.page_description;
+
+  // console.log({seoTitl, seoDesc});
   // console.log(product);
 
   const addToCart = (item) => {
@@ -105,9 +105,9 @@ export default function ProductPage() {
   return (
     <>
 
-      <Helmet key={productSlug} defer={false}>
-        <title>{ seoTitle || productName }</title>
+      <Helmet >
 
+        <title>{ seoTitle || productName }</title>
         <meta
           name="description"
           content={seoDescription || productDescription}
@@ -117,6 +117,20 @@ export default function ProductPage() {
           property="og:title"
           content={ seoTitle || productName }
         />
+        <meta
+          property="og:description"
+          content={seoDescription || productDescription}
+        />
+
+        <meta
+          name="twitter:title"
+          content={ seoTitle || productName }
+        />
+        <meta
+          name="twitter:description"
+          content={seoDescription || productDescription}
+        />
+
       </Helmet>
 
       

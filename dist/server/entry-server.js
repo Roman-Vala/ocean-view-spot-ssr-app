@@ -786,20 +786,29 @@ function Collection() {
 	const { appContext } = useOutletContext();
 	const collection = appContext.collections.find((el) => el.slug === collectionSlug);
 	return /* @__PURE__ */ jsxs(Fragment, { children: [
-		/* @__PURE__ */ jsxs(Helmet, {
-			defer: false,
-			children: [
-				/* @__PURE__ */ jsx("title", { children: collection?.seoTitle || collection?.name }),
-				/* @__PURE__ */ jsx("meta", {
-					name: "description",
-					content: collection.seoDescription
-				}),
-				/* @__PURE__ */ jsx("meta", {
-					property: "og:title",
-					content: collection?.seoTitle || collection?.name
-				})
-			]
-		}, collectionSlug),
+		/* @__PURE__ */ jsxs(Helmet, { children: [
+			/* @__PURE__ */ jsx("title", { children: collection?.seoTitle || collection?.name }),
+			/* @__PURE__ */ jsx("meta", {
+				name: "description",
+				content: collection.seoDescription || ""
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				property: "og:title",
+				content: collection?.seoTitle || collection?.name
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				property: "og:description",
+				content: collection.seoDescription || ""
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				name: "twitter:title",
+				content: collection?.seoTitle || collection?.name
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				name: "twitter:description",
+				content: collection.seoDescription || ""
+			})
+		] }),
 		collection && /* @__PURE__ */ jsx(ProductList, { categoryId: collection.id }),
 		/* @__PURE__ */ jsx(CollectionsList, {}),
 		/* @__PURE__ */ jsx(RecentProducts, {})
@@ -825,20 +834,29 @@ function Contact() {
 function Home() {
 	const { appContext } = useOutletContext();
 	return /* @__PURE__ */ jsxs(Fragment, { children: [
-		/* @__PURE__ */ jsxs(Helmet, {
-			defer: false,
-			children: [
-				/* @__PURE__ */ jsx("title", { children: appContext.metaTitle }),
-				/* @__PURE__ */ jsx("meta", {
-					name: "description",
-					content: appContext.metaDescription
-				}),
-				/* @__PURE__ */ jsx("meta", {
-					property: "og:title",
-					content: appContext.metaTitle
-				})
-			]
-		}, "home"),
+		/* @__PURE__ */ jsxs(Helmet, { children: [
+			/* @__PURE__ */ jsx("title", { children: appContext.metaTitle }),
+			/* @__PURE__ */ jsx("meta", {
+				name: "description",
+				content: appContext.metaDescription
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				property: "og:title",
+				content: appContext.metaTitle
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				property: "og:description",
+				content: appContext.metaDescription
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				name: "twitter:title",
+				content: appContext.metaTitle
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				name: "twitter:description",
+				content: appContext.metaDescription
+			})
+		] }),
 		/* @__PURE__ */ jsx(CollectionsList, {}),
 		/* @__PURE__ */ jsx(RecentProducts, {})
 	] });
@@ -989,10 +1007,10 @@ function ProductPage() {
 	const [isCheckoutLoading, setCheckoutLoading] = useState(false);
 	const inventoryCount = product.item?.item_data.variations[0].inventoryCount?.toString();
 	const isAvailable = product.item?.item_data.variations[0].inventoryCount >= 1;
-	const seoTitle = Object.values(product.item?.custom_attribute_values || {}).find((el) => el.name === "seo-title")?.string_value;
-	const seoDescription = Object.values(product.item?.custom_attribute_values || {}).find((el) => el.name === "seo-description")?.string_value;
 	const productName = product.item?.item_data.name || "";
 	const productDescription = product.item?.item_data.description || "";
+	const seoTitle = product.item?.item_data.ecom_seo_data?.page_title;
+	const seoDescription = product.item?.item_data.ecom_seo_data?.page_description;
 	const addToCart = (item) => {
 		const existingItem = appContext.cart.find((cartItem) => cartItem.id === item.id);
 		setAppContext({
@@ -1041,20 +1059,29 @@ function ProductPage() {
 		inventoryCount
 	]);
 	return /* @__PURE__ */ jsxs(Fragment, { children: [
-		/* @__PURE__ */ jsxs(Helmet, {
-			defer: false,
-			children: [
-				/* @__PURE__ */ jsx("title", { children: seoTitle || productName }),
-				/* @__PURE__ */ jsx("meta", {
-					name: "description",
-					content: seoDescription || productDescription
-				}),
-				/* @__PURE__ */ jsx("meta", {
-					property: "og:title",
-					content: seoTitle || productName
-				})
-			]
-		}, productSlug),
+		/* @__PURE__ */ jsxs(Helmet, { children: [
+			/* @__PURE__ */ jsx("title", { children: seoTitle || productName }),
+			/* @__PURE__ */ jsx("meta", {
+				name: "description",
+				content: seoDescription || productDescription
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				property: "og:title",
+				content: seoTitle || productName
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				property: "og:description",
+				content: seoDescription || productDescription
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				name: "twitter:title",
+				content: seoTitle || productName
+			}),
+			/* @__PURE__ */ jsx("meta", {
+				name: "twitter:description",
+				content: seoDescription || productDescription
+			})
+		] }),
 		/* @__PURE__ */ jsxs("div", {
 			className: "grid gap-6 sm:grid-cols-1 lg:grid-cols-12 mb-8",
 			children: [/* @__PURE__ */ jsx("div", {

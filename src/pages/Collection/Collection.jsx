@@ -17,17 +17,30 @@ export default function Collection() {
 
   return (
     <>
-    <Helmet key={collectionSlug} defer={false}>
-        <title>{collection?.seoTitle || collection?.name}</title>
+    <Helmet>
 
+        <title>{collection?.seoTitle || collection?.name}</title>
         <meta
           name="description"
-          content={collection.seoDescription}
+          content={collection.seoDescription || ''}
         />
 
         <meta
           property="og:title"
           content={collection?.seoTitle || collection?.name}
+        />
+        <meta
+          property="og:description"
+          content={collection.seoDescription || ''}
+        />
+
+        <meta
+          name="twitter:title"
+          content={collection?.seoTitle || collection?.name}
+        />
+        <meta
+          name="twitter:description"
+          content={collection.seoDescription || ''}
         />
       </Helmet>
 
