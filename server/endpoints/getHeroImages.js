@@ -1,39 +1,104 @@
-// controllers/users.controller.js
+import { squareFetch } from '../server-utils/squareFetch.js';
+
 export default async function getHeroImages(req, res, next) { 
 
   try {
-    const response = await fetch('https://connect.squareup.com/v2/catalog/search', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.SQUARE_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+
+    const [shopfrontImagesCategory, textOverlayOptionsObjects] = await Promise.all([
+      squareFetch("/v2/catalog/search", {
+        body: {
+          object_types: ['CATEGORY'],
+          include_related_objects: true,
+          include_category_path_to_root: true,
+          query: {
+            exact_query: {
+              attribute_name: "name",
+              attribute_value: "shopfront images"
+            }
+          }
+        }
+      }),
+        
+  
+      squareFetch("/v2/catalog/search", {
+        body: {
+          object_types: ["CUSTOM_ATTRIBUTE_DEFINITION"],
+          query: {
+            exact_query: {
+              attribute_name: "name",
+              attribute_value: "text-overlay"
+            }
+          }
+        }          
+      })
+        
+    ]);
+    
+    const textOverlayOptions = textOverlayOptionsObjects.objects[0].custom_attribute_definition_data.selection_config.allowed_selections;
+
+    const textOverlayOptionsMap = textOverlayOptions.reduce((map, opt) => {
+      map[opt.uid] = opt.name;
+      return map;
+    }, {});
+    
+
+    const shopfrontImagesId = shopfrontImagesCategory.objects[0].id;
+
+    const shopfrontImagesItems = await squareFetch('/v2/catalog/search',{
+      body:{
         object_types: ['ITEM'],
         include_related_objects: true,
         include_category_path_to_root: true,
         query: {
           exact_query: {
             attribute_name: "category_id",
-            attribute_value: "PZHEDRPISOZX53HNMKTS6XLV"
+            attribute_value: shopfrontImagesId
           }
         }
-      })
+      }
     });
 
-    if (!response.ok) {
-      const message = await response.text();
-      console.error(`Square hero image request failed: ${response.status} ${message}`);
-      return res.status(502).json({ error: "Failed to fetch hero images" });
-    }
-    
-    const data = await response.json();
-    const images = (data.related_objects || [])
+    const sortedShopfrontImages = shopfrontImagesItems.objects
+      .toSorted((a, b) => {
+        const getPriority = (item) => {
+          const attr = Object.values(item.custom_attribute_values ?? {})
+            .find((value) => value.name === 'priority');
+      
+          return attr?.number_value == null ? Infinity : Number(attr.number_value);
+        };
+      
+        return getPriority(a) - getPriority(b);
+      })
+      .flatMap((item) => {
+        const textOverlayAttr = 
+          Object.values(item.custom_attribute_values ?? {}).find(
+            (value) => value.name === 'text-overlay'
+          );
+
+        const textOverlay = textOverlayAttr
+          ? textOverlayOptionsMap[textOverlayAttr.selection_uid_values[0]]
+          : "dark";
+
+        return (item.item_data?.image_ids ?? []).map(el=>({
+          id:el,
+          textOverlay
+        }))
+      
+      });
+
+    const images = (shopfrontImagesItems.related_objects || [])
       .filter(el=>el.type==="IMAGE")
-      .map(img=>img.image_data)
       .filter(Boolean);
 
-    res.json(images);
+    const imageMap = images.reduce((map, img) => {
+      map[img.id] = {url:img.image_data?.url};
+      return map;
+    }, {});
+
+    const enhancedImages = sortedShopfrontImages.map(el=>({...imageMap[el.id],textOverlay:el.textOverlay}))
+
+
+    res.json(enhancedImages);
   } catch (err) {
     console.error("getHeroImages error:", err);
     res.status(500).json({ error: "Server error" });

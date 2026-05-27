@@ -81,6 +81,14 @@ app.use(async (req, res) => {
     .end(html)
 });
 
+// 404 catch-all (must be LAST)
+app.use((req, res) => {
+  res.status(404).json({
+    error: "Resource not found",
+    path: req.originalUrl,
+  });
+});
+
 app.listen(port, () => {
   console.log(`Production server running on port ${port} - http://localhost:${port}`);
 });
