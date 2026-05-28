@@ -108,7 +108,7 @@ export default async function getCategoryItems(req, res, next) {
           ? imageMap[item.item_data.image_ids[0]]
           : null,
 
-      images: item.item_data.image_ids.map(imgId=>imageMap[imgId]),
+      images: item.item_data.image_ids?.map(imgId=>imageMap[imgId]) || [],
 
       stockLevel:
         variation?.id

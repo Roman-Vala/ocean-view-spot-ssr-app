@@ -34,7 +34,7 @@ export default async function getHeroImages(req, res, next) {
         
     ]);
     
-    const textOverlayOptions = textOverlayOptionsObjects.objects[0].custom_attribute_definition_data.selection_config.allowed_selections;
+    const textOverlayOptions = textOverlayOptionsObjects.objects?.[0].custom_attribute_definition_data.selection_config.allowed_selections || [];
 
     const textOverlayOptionsMap = textOverlayOptions.reduce((map, opt) => {
       map[opt.uid] = opt.name;
@@ -42,9 +42,9 @@ export default async function getHeroImages(req, res, next) {
     }, {});
     
 
-    const shopfrontImagesId = shopfrontImagesCategory.objects[0].id;
+    const shopfrontImagesId = shopfrontImagesCategory.objects?.[0].id;
 
-    const shopfrontImagesItems = await squareFetch('/v2/catalog/search',{
+    const shopfrontImagesItems = shopfrontImagesId && await squareFetch('/v2/catalog/search',{
       body:{
         object_types: ['ITEM'],
         include_related_objects: true,
@@ -58,7 +58,7 @@ export default async function getHeroImages(req, res, next) {
       }
     });
 
-    const sortedShopfrontImages = shopfrontImagesItems.objects
+    const sortedShopfrontImages = shopfrontImagesItems?.objects
       .toSorted((a, b) => {
         const getPriority = (item) => {
           const attr = Object.values(item.custom_attribute_values ?? {})
@@ -84,9 +84,9 @@ export default async function getHeroImages(req, res, next) {
           textOverlay
         }))
       
-      });
+      }) || [];
 
-    const images = (shopfrontImagesItems.related_objects || [])
+    const images = (shopfrontImagesItems?.related_objects || [])
       .filter(el=>el.type==="IMAGE")
       .filter(Boolean);
 
