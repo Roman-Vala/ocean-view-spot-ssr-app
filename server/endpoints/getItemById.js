@@ -39,7 +39,14 @@ export default  async function getItemById(req, res) {
     });
 
     if (!itemRes.ok) {
-      return res.status(500).json({ error: "Failed to fetch catalog item" });
+      return res.json({
+        success: false,
+        error: {
+          code: 'CATALOG_FETCH_FAILED',
+          message: 'Unable to load item',
+          status: itemRes.status,
+        },
+      });
     }
 
     const itemData = await itemRes.json();
@@ -70,9 +77,14 @@ export default  async function getItemById(req, res) {
       });
 
       if (!inventoryRes.ok) {
-        return res
-          .status(500)
-          .json({ error: "Failed to fetch inventory" });
+        return res.json({
+          success: false,
+          error: {
+            code: 'INVENTORY_FETCH_FAILED',
+            message: 'Failed to fetch inventory',
+            status: itemRes.status,
+          },
+        });        
       }
 
       const inventoryData = await inventoryRes.json();
@@ -115,11 +127,25 @@ export default  async function getItemById(req, res) {
     });
   } catch (err) {
     if (err.name === "AbortError") {
-      return res.status(499).json({ error: "Request aborted" });
+      return res.json({
+        success: false,
+        error: {
+          code: 'CATALOG_FETCH_FAILED',
+          message: 'Request aborted',
+          status: itemRes.status,
+        },
+      });
     }
 
     console.error(err);
-    return res.status(500).json({ error: "Server error" });
+    return res.json({
+      success: false,
+      error: {
+        code: 'CATALOG_FETCH_FAILED',
+        message: 'Server error',
+        status: itemRes.status,
+      },
+    });
   }
 }
 

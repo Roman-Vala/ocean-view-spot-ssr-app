@@ -2,41 +2,32 @@ import crypto from 'crypto';
 import {slugifyText} from '../../utils/slugifyText.js';
 import { squareFetch } from '../server-utils/squareFetch.js';
 
-// const SQUARE_BASE_URL = "https://connect.squareup.com";
-// const SQUARE_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
-
-//id for custom attribute "tag"
-const tagId = 'XIZMWM7V473IMDCBPE2YIQWD'
-
-// helper for Square requests
-// async function squareFetch(path, body) {
-//   const res = await fetch(`${SQUARE_BASE_URL}${path}`, {
-//     method: "POST",
-//     headers: {
-//       "Authorization": `Bearer ${SQUARE_TOKEN}`,
-//       "Content-Type": "application/json"
-//     },
-//     body: JSON.stringify(body)
-//   });
-//   if (!res.ok) {
-//     const text = await res.text();
-//     throw new Error(`Square API error: ${text}`);
-//   }
-//   return res.json();
-// };
-
 export default async function getItemsByCategoryOrTag(req, res, next) {
 
   const { categoryId, tag } = req.query;
 
-  // 0 get catalog latest time to calculate ETag
+  // console.log({ categoryId, tag });
 
+  // 0 get catalog latest time to calculate ETag + id for "tag" attr
   const catResp = await squareFetch("/v2/catalog/search", {
-    body:{object_types: ['TAX'],limit:1}
+    body:{
+      object_types: ['CUSTOM_ATTRIBUTE_DEFINITION'],
+      limit:1,
+      query: {
+        exact_query: {
+          attribute_name: "name",
+          attribute_value: "tag"
+        }
+      }
+    }
   }
     
   );
+
   const versionString = catResp.latest_time;
+  // id for custom attribute "tag"
+  const tagId = catResp.objects?.[0].id;
+
   const etag = crypto.createHash("sha1").update(versionString).digest("hex");
   const clientETag = req.headers["if-none-match"];
 

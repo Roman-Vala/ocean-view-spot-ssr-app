@@ -22,7 +22,7 @@ export default function Collection() {
         <title>{collection?.seoTitle || collection?.name}</title>
         <meta
           name="description"
-          content={collection.seoDescription || ''}
+          content={collection?.seoDescription || ''}
         />
 
         <meta
@@ -31,7 +31,7 @@ export default function Collection() {
         />
         <meta
           property="og:description"
-          content={collection.seoDescription || ''}
+          content={collection?.seoDescription || ''}
         />
 
         <meta
@@ -40,7 +40,7 @@ export default function Collection() {
         />
         <meta
           name="twitter:description"
-          content={collection.seoDescription || ''}
+          content={collection?.seoDescription || ''}
         />
       </Helmet>
 
